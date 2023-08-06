@@ -1,12 +1,54 @@
 <template>
   <div class="mr-6">
+
+    <v-container>
+      <v-row>
+        <v-col cols="12" md="12">
+          <v-form @submit="submitForm">
+            <v-row>
+              <v-col cols="4">
+                <v-text-field v-model="filters.name" label="Họ tên"></v-text-field>
+              </v-col>
+              <v-col cols="4">
+                <v-text-field v-model="filters.email" label="Email"></v-text-field>
+              </v-col>
+              <v-col cols="4">
+                <v-text-field v-model="filters.phone" label="Số điện thoại"></v-text-field>
+              </v-col>
+              <v-col cols="4">
+                <v-select
+                  v-model="selectedOption"
+                  :items="options"
+                  item-text="text"
+                  item-value="value"
+                  label="Chọn hr"
+                  ></v-select>
+              </v-col>
+              <v-col cols="4">
+                <v-select
+                v-model="selectedOption2"
+                :items="options"
+                item-text="text"
+                item-value="value"
+                label="Chọn hr"
+                ></v-select>
+              </v-col>
+              <v-col cols="4">
+                <v-btn class="w-100" type="submit" color="primary">Lọc</v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-col>
+      </v-row>
+    </v-container>
+
+
     <div class="d-flex justify-end">
       <v-btn class="my-5" color="success" to="/user/them">
         Thêm
       </v-btn>
     </div>
 
-    <v-checkbox v-model="selectAll">Chọn tất cả</v-checkbox>
     <v-data-table :headers="headers" :items="desserts" item-key="id" show-select class="elevation-1">
       <!-- Cột checkbox -->
       <template v-slot:item="{ item }">
@@ -50,11 +92,23 @@ export default {
   name: 'ListUserView',
   data() {
     return {
+      filters: {
+        fullname: '',
+        email: '',
+        phone: '',
+      },
+      selectedOption: "",
+      selectedOption2: "",
+      options: [
+        { value: "option1_value", text: "Option 1" },
+        { value: "option2_value", text: "Option 2" },
+        { value: "option3_value", text: "Option 3" },
+        { value: "option4_value", text: "Option 4" },
+      ],
       checked: [],
       selectAll: false,
       itemsPerPage: 5,
       headers: [
-
         { text: 'Dessert (100g serving)', value: 'name', key: 'name' },
         { text: 'Calories', value: 'calories', key: 'calories' },
         { text: 'Fat (g)', value: 'fat', key: 'fat' },
