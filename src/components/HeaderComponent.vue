@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { EventBus } from '../main.js';
+import { EventBus } from '../main.ts';
 export default {
   name: "HeaderComponent",
   data() {

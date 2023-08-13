@@ -10,8 +10,8 @@
                 <v-col cols="4">
                   <v-select
                     small dense hide-details="true"
-                    v-model="filters.userId"
-                    :items="options"
+                    v-model="attendanceFilters.userId"
+                    :items="optionUsers"
                     item-text="value"
                     item-value="id"
                     label="Chọn user"
@@ -23,7 +23,7 @@
                 <v-col cols="4">
                   <v-select
                     small dense hide-details="true"
-                    v-model="filters.workShiftId"
+                    v-model="attendanceFilters.workShiftId"
                     :items="workShiftOptions"
                     item-text="value"
                     item-value="id"
@@ -52,7 +52,7 @@
     <!-- Data table -->
     <v-data-table 
       :headers="headers" 
-      :items="dataAttendances" item-key="id" 
+      :items="attendances" item-key="id" 
       :items-per-page-options="[5, 10, 20, -1]"
       show-select 
       v-model="selected"
@@ -60,7 +60,7 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <td>
-            <v-icon @click="updateAttendance(item)"> mdi-pencil </v-icon>
+            <v-icon @click="updateDataAttendance(item)"> mdi-pencil </v-icon>
             <v-icon @click="confirmDelete(item.id)" > mdi-delete </v-icon>
           </td>
         </template>
@@ -126,11 +126,11 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6">
-                    <v-select :items="options"  
+                    <v-select :items="optionUsers"  
                       item-text="value"
                       item-value="id"
                       label="User"
-                      v-model="dataAttendance.userId" 
+                      v-model="attendance.userId" 
                       required></v-select>
                   </v-col>
                   <v-col cols="12" sm="6">
@@ -138,7 +138,7 @@
                       item-text="value"
                       item-value="id"
                       label="Work Shift"
-                      v-model="dataAttendance.workShiftId" 
+                      v-model="attendance.workShiftId" 
                       required></v-select>
                   </v-col>
                   <!-- <v-col cols="12" sm="6">
@@ -160,7 +160,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" variant="text" @click="dialogFormCreate = false">
+              <v-btn color="primary" variant="text" @click="closeAddDialog">
                 Đóng
               </v-btn>
               <v-btn color="success" type="submit" variant="text" >
@@ -183,11 +183,11 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12" sm="6">
-                      <v-select :items="options"  
+                      <v-select :items="optionUsers"  
                         item-text="value"
                         item-value="id"
                         label="User"
-                        v-model="dataAttendanceUpdate.userId" 
+                        v-model="attendance.userId" 
                         required></v-select>
                     </v-col>
                     <v-col cols="12" sm="6">
@@ -195,7 +195,7 @@
                         item-text="value"
                         item-value="id"
                         label="Work Shift"
-                        v-model="dataAttendanceUpdate.workShiftId" 
+                        v-model="attendance.workShiftId" 
                         required></v-select>
                     </v-col>
                     
@@ -204,7 +204,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" variant="text" @click="dialogFormUpdate = false">
+                <v-btn color="primary" variant="text" @click="closeUpdateDialog">
                   Đóng
                 </v-btn>
                 <v-btn color="success" type="submit" variant="text" >
@@ -231,20 +231,15 @@
 </template>
 
 <script>
-import axios from "axios";
-const apiUrl = 'https://localhost:44384/ii';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'ListUserView',
- 
+  computed: {
+    ...mapGetters(['attendanceFilters', 'attendance', 'attendances', 'optionUsers', 'addStatus', 'updateStatus', 'deleteStatus'] )
+  },
   data() {
     return {
-      filters: {
-        userId: null,
-        workShiftId: null,
-        contractId: null,
-      },
-      options: [],
       workShiftOptions: [
         { "id": 1, "value": "sbc" },
         { "id": 2, "value": "ccba" }
@@ -253,7 +248,6 @@ export default {
       selected: [],
       selectAll: false,
       showConfirmDialog: false,
-      deleteId: '',
       selectedDate: null,
       deleteIds: [],
       dialogFormUpdate: false,
@@ -268,30 +262,6 @@ export default {
         { text: 'Attendance Status', value: 'attendanceStatus', key: 'attendanceStatus' },
         { text: 'Actions', value: 'actions', key: 'actions', sortable: false },
       ],
-      dataAttendances: [],
-      dataAttendance:  {
-        "userId": null,
-        "contractId": null,
-        "workShiftId": 1,
-        "totalWorkMinute": null,
-        "isOverTime": null,
-        "enterTime": null,
-        "outTime": null,
-        "typeAttendance": null,
-        "attendanceStatus": null,
-      },
-      dataAttendanceUpdate:  {
-        "id": null,
-        "userId": null,
-        "contractId": null,
-        "workShiftId": 1,
-        "totalWorkMinute": null,
-        "isOverTime": null,
-        "enterTime": null,
-        "outTime": null,
-        "typeAttendance": null,
-        "attendanceStatus": null,
-      },
       snackbar: false,
       snackbarMessage: "",
       snackbarColor: "",
@@ -299,57 +269,12 @@ export default {
     };
   },
   created() {
-    this.getAllUsers();
-    this.getAllAttendances();
+    this.getOptionUsers();
+    this.getAttendances();
   },  
   methods: {
-    getAllUsers: function() {
-      let apiGetUserUrl = apiUrl + '/GetAllUser';
-      axios.get(apiGetUserUrl)
-      .then(response => {
-        this.dataUsers = response.data.data.map(item => (Object.assign({}, item, { fullname: item.fisrtName + ' ' + item.lastname })));
-        this.options = [...this.dataUsers.map(item => (Object.assign({}, {'id': item.id}, { 'value': item.fullname })))];
-        console.log(this.dataUsers);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
-    filterAttendances: function() {
-      let apiGetAttendanceUrl = apiUrl + '/GetAllAttendance';
-
-      const filteredFields = {};
-      Object.entries(this.filters).forEach(([key, value]) => {
-        if (value != null) {
-          filteredFields[key] = value;
-        }
-      });
-
-      if(Object.keys(filteredFields).length > 0) {
-        const queryString = Object.keys(filteredFields).map(key => `${key}=${filteredFields[key]}`).join('&');
-        apiGetAttendanceUrl = `${apiGetAttendanceUrl}?${queryString}`;
-        console.log(apiGetAttendanceUrl);
-      }
-      
-      axios.get(apiGetAttendanceUrl)
-      .then(response => {
-        this.dataAttendances = response.data.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-
-    },
-    getAllAttendances: function() {
-      let apiGetAttendanceUrl = apiUrl + '/GetAllAttendance';
-      axios.get(apiGetAttendanceUrl)
-      .then(response => {
-        this.dataAttendances = response.data.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
+    ...mapActions(['getAttendances', 'addAttendance', 'updateAttendance','deleteAttendances','getOptionUsers']),
+   
     confirmDelete: function(id) {
       this.showConfirmDialog = true;
       this.deleteIds = [id];
@@ -358,18 +283,18 @@ export default {
       this.showConfirmDialog = true;
       this.deleteIds = this.selected.map(item => item.id);
     },
-    deleteItem: function() {
-      const apiDeleteAttendanceUrl = `${apiUrl}/DeleteRangeAttendance`;
-      axios.post(apiDeleteAttendanceUrl,this.deleteIds)
-          .then(response => {
-            console.log(response);
-            this.showSnackbar("Xóa thành công", "success")
-            this.getAllAttendances();
-          })
-          .catch(error => {
-            console.log(error);
-          })
-      this.showConfirmDialog = false;
+    deleteItem: async function() {
+      await this.deleteAttendances(this.deleteIds);
+
+      if (this.deleteStatus) {
+          this.getAttendances();
+
+          this.showConfirmDialog = false;
+          this.showSnackbar("Xóa thành công", "success");
+      } else {
+          this.showSnackbar("Xóa thất bại", "error");
+      }
+     
     },
    
     handleDataAttendance: function(dataAttendance) {
@@ -380,64 +305,81 @@ export default {
       dataAttendance.attendanceStatus = 1;
       dataAttendance.typeAttendance = 2;
    },
-    submitFormCreate: function() {
-      this.handleDataAttendance(this.dataAttendance);
+    submitFormCreate: async function() {
+      this.handleDataAttendance(this.attendance);
       const now = new Date();
-      this.dataAttendance.enterTime = now.toISOString();
+      this.attendance.enterTime = now.toISOString();
       const totalWorkMinuteArr = [30,40,45,50,60,90,100,110,75,70]
       const randomContract = this.contractOptions[Math.floor(Math.random() * this.contractOptions.length)];
-      this.dataAttendance.totalWorkMinute = totalWorkMinuteArr[[Math.floor(Math.random() * this.contractOptions.length)]];
-      this.dataAttendance.contractId = randomContract;
+      this.attendance.totalWorkMinute = totalWorkMinuteArr[[Math.floor(Math.random() * this.contractOptions.length)]];
+      this.attendance.contractId = randomContract;
 
-      const apiAddAttendanceUrl = `${apiUrl}/AddAttendance`;
-      axios.post(apiAddAttendanceUrl, this.dataAttendance)
-          .then(response => {
-            this.showSnackbar("Thêm attendance thành công", "success")
-            this.dialogFormCreate = false;
-            this.getAllAttendances();
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Thêm dự án thất bại", "error")
-            console.log("error: ",error);
-          })
+      console.log(this.attendance);
+      
+      await this.addAttendance(this.attendance);
+      console.log('sau: ',this.addStatus);
+
+      if(this.addStatus) {
+        this.showSnackbar("Thêm thành công", "success")
+        this.dialogFormCreate = false;
+        this.getAttendances();
+        this.resetAttendance();
+      }else {
+        this.showSnackbar("Thêm thất bại", "error");
+      }
+
     },
 
-    updateAttendance: function(Attendance) {
-      let keyDataAttendance = Object.keys(this.dataAttendanceUpdate);
-      Object.entries(Attendance).forEach(([key, value]) => {
-          if (keyDataAttendance.includes(key)) {
-            this.dataAttendanceUpdate[key] = value;
-          }
-        });
+    updateDataAttendance: function(attendance) {
+      let keyDataAttendance = Object.keys(this.attendance);
+      Object.entries(attendance).forEach(([key, value]) => {
+        if (keyDataAttendance.includes(key)) {
+          this.attendance[key] = value;
+        }
+      });
+      
+      this.attendance.id = attendance.id 
       this.dialogFormUpdate = true;
-      console.log(this.dataAttendanceUpdate);
+      console.log(this.attendance);
     },
   
-    submitFormUpdate: function() {
-      this.handleDataAttendance(this.dataAttendanceUpdate);
-      console.log(this.dataAttendanceUpdate);
-      const apiAddAttendanceUrl = `${apiUrl}/updateAttendanceAsync/${this.dataAttendanceUpdate.id}`;
-      axios.put(apiAddAttendanceUrl, this.dataAttendanceUpdate)
-          .then(response => {
-            this.showSnackbar("Cập nhật attendance thành công", "success")
-            this.dialogFormUpdate = false;
-            this.getAllAttendances();
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Cập nhật người dùng thất bại", "error")
-            console.log("error: ",error);
-          })
+    submitFormUpdate: async function() {
+
+      await this.updateAttendance(this.attendance);
+      console.log('sau: ',this.updateStatus);
+
+      if(this.updateStatus) {
+        this.showSnackbar("Cập nhật thành công", "success")
+        this.dialogFormUpdate = false;
+        this.getAttendances();
+        this.resetAttendance();
+      }else {
+        this.showSnackbar("Cập nhật thất bại", "error");
+      }
+
     },
     submitForm: function() {
-      this.filterAttendances();
+      this.getAttendances(this.attendanceFilters);
+    },
+    resetAttendance: function() {
+      Object.entries(this.attendance).forEach(([key]) => {
+        this.attendance[key] = null;
+      });
+      delete this.attendance.id
     },
     showSnackbar(msg, color) {
       this.snackbarMessage = msg;
       this.snackbarColor = color; 
       this.snackbar = true; 
     },
+    closeUpdateDialog: function() {
+      this.dialogFormUpdate = false;
+      this.resetAttendance();
+    },
+    closeAddDialog: function() {
+      this.dialogFormCreate = false;
+      this.resetAttendance()
+    }
   },
 
 };

@@ -19,7 +19,7 @@
                   <v-select
                     small dense hide-details="true"
                     v-model="filters.hrId"
-                    :items="options"
+                    :items="optionUsers"
                     item-text="value"
                     item-value="id"
                     label="Chọn hr"
@@ -30,14 +30,14 @@
                     <!-- <v-combobox
                       v-model="filters.hrId"
                       label="Chọn hr"
-                      :items="options"
+                      :items="optionUsers"
                       item-text="value"
                       item-value="id"
                     ></v-combobox> -->
                 </v-col>
                 <v-col cols="4">
                   <v-select v-model="filters.introduceUserId"
-                  :items="options"
+                  :items="optionUsers"
                   item-text="value"
                   item-value="id"
                   outlined
@@ -48,7 +48,7 @@
                   <!-- <v-combobox
                       v-model="filters.introduceUserId"
                       label="Chọn người giới thiệu"
-                      :items="options"
+                      :items="optionUsers"
                       item-text="value"
                       item-value="id"
                     ></v-combobox> -->
@@ -72,7 +72,7 @@
     <!-- Data table -->
     <v-data-table 
       :headers="headers" 
-      :items="dataUsers" item-key="id" 
+      :items="users" item-key="id" 
       :items-per-page-options="[5, 10, 20, -1]"
       show-select 
       v-model="selected"
@@ -88,7 +88,7 @@
       
         <template v-slot:[`item.actions`]="{ item }">
           <td>
-            <v-icon @click="updateUser(item)"> mdi-pencil </v-icon>
+            <v-icon @click="updateDataUser(item)"> mdi-pencil </v-icon>
             <v-icon @click="confirmDelete(item.id)" > mdi-delete </v-icon>
           </td>
         </template>
@@ -164,45 +164,45 @@
                   </v-col>
 
                   <v-col  cols="12" sm="6" md="4" >
-                    <v-text-field v-model="dataUser.fisrtName" label="Họ" required> </v-text-field>
+                    <v-text-field v-model="user.fisrtName" label="Họ" required> </v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="dataUser.lastname" label="Tên" ></v-text-field>
+                    <v-text-field v-model="user.lastname" label="Tên" ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field label="Số điện thoại*"
-                      v-model="dataUser.phoneNumber"
+                      v-model="user.phoneNumber"
                       persistent-hint
                       required
                     ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Email*"  v-model="dataUser.email" required></v-text-field>
+                    <v-text-field label="Email*"  v-model="user.email" required></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Mật khẩu*" type="password"  v-model="dataUser.password" required></v-text-field>
+                    <v-text-field label="Mật khẩu*" type="password"  v-model="user.password" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Địa chỉ" v-model="dataUser.address" ></v-text-field>
+                    <v-text-field label="Địa chỉ" v-model="user.address" ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-select :items="options"  
+                    <v-select :items="optionUsers"  
                       item-text="value"
                       item-value="id"
                       label="Người giới thiệu"
-                      v-model="dataUser.introduceUserId" 
+                      v-model="user.introduceUserId" 
                       required></v-select>
                   </v-col>
 
                   <v-col cols="12" sm="6">
                     <v-autocomplete
-                      :items="options"
+                      :items="optionUsers"
                       label="Hr"
-                      v-model="dataUser.hrId" 
+                      v-model="user.hrId" 
                       item-text="value"
                       item-value="id"
                     ></v-autocomplete>
@@ -214,7 +214,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" variant="text" @click="dialogFormCreate = false">
+              <v-btn color="primary" variant="text" @click="closeAddDialog">
                 Đóng
               </v-btn>
               <v-btn color="success" type="submit" variant="text" >
@@ -250,45 +250,45 @@
                   </v-col>
 
                   <v-col  cols="12" sm="6" md="4" >
-                    <v-text-field v-model="dataUserUpdate.fisrtName" label="Họ" required> </v-text-field>
+                    <v-text-field v-model="user.fisrtName" label="Họ" required> </v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="dataUserUpdate.lastname" label="Tên" ></v-text-field>
+                    <v-text-field v-model="user.lastname" label="Tên" ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field label="Số điện thoại*"
-                      v-model="dataUserUpdate.phoneNumber"
+                      v-model="user.phoneNumber"
                       persistent-hint
                       required
                     ></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Email*"  v-model="dataUserUpdate.email" required></v-text-field>
+                    <v-text-field label="Email*"  v-model="user.email" required></v-text-field>
                   </v-col>
 
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Mật khẩu*" type="password"  v-model="dataUserUpdate.password" required></v-text-field>
+                    <v-text-field label="Mật khẩu*" type="password"  v-model="user.password" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field label="Địa chỉ" v-model="dataUserUpdate.address" ></v-text-field>
+                    <v-text-field label="Địa chỉ" v-model="user.address" ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-select :items="options"  
+                    <v-select :items="optionUsers"  
                       item-text="value"
                       item-value="id"
                       label="Người giới thiệu"
-                      v-model="dataUserUpdate.introduceUserId" 
+                      v-model="user.introduceUserId" 
                       required></v-select>
                   </v-col>
 
                   <v-col cols="12" sm="6">
                     <v-autocomplete
-                      :items="options"
+                      :items="optionUsers"
                       label="Hr"
-                      v-model="dataUserUpdate.hrId" 
+                      v-model="user.hrId" 
                       item-text="value"
                       item-value="id"
                     ></v-autocomplete>
@@ -300,7 +300,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" variant="text" @click="dialogFormUpdate = false">
+              <v-btn color="primary" variant="text" @click="closeUpdateDialog">
                 Đóng
               </v-btn>
               <v-btn color="success" type="submit" variant="text" >
@@ -327,34 +327,28 @@
 </template>
 
 <script>
-import axios from "axios";
-const apiUrl = 'https://localhost:44384/ii';
+// import axios from "axios";
+import { mapActions, mapGetters } from 'vuex';
+// const apiUrl = 'https://localhost:44384/ii';
 
 export default {
   name: 'ListUserView',
- 
+  computed: {
+    ...mapGetters(['users', 'user', 'userUpdate', 'optionUsers', 'filters', 'deleteStatus', 'addStatus', 'updateStatus']),
+  },
   data() {
     return {
       userImageUpdate: "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
       selectedImage: "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
-      filters: {
-        name: null,
-        email: null,
-        phone: null,
-        hrId: null,
-        introduceUserId: null,
-      },
-      itemsPerPage: 10,
-      perPage: 10,
-      perPageOptions: [10, 20, 30],
-      options: [],
+     
       selected: [],
       selectAll: false,
       showConfirmDialog: false,
-      deleteId: '',
+      
       deleteIds: [],
       dialogFormUpdate: false,
       dialogFormCreate: false,
+
       headers: [
         { text: 'Avatar', value: 'userAvatar', key: 'userAvatar' },
         { text: 'Họ tên', value: 'fullname', key: 'fullname' },
@@ -364,28 +358,7 @@ export default {
         { text: 'Địa chỉ', value: 'address', key: 'address' },
         { text: 'Thao tác', value: 'actions', key: 'actions' },
       ],
-      dataUsers: [],
-
-      dataUser: {
-        "email": null,
-        "code": null,
-        "userAvatar": null,
-        "userWallImage": null,
-        "phoneNumber": null,
-        "password": null,
-        "contactCode": null,
-        "fisrtName": null,
-        "hrId": null,
-        "introduceUserId": null,
-        "lastname": null,
-        "payLeave": null,
-        "paidLeave": null,
-        "unPaidLeave": null,
-        "userStatus": null,
-        "typeUser": null,
-        "createTime": null,
-        "updateTime": null
-      },
+     
       dataUserUpdate: {
       "email": null,
       "code": null,
@@ -416,46 +389,12 @@ export default {
     };
   },
   created() {
-    this.getAllUsers();
+    this.getUsers();
+    this.getOptionUsers();
   },  
   methods: {
-    getAllUsers: function() {
-      let apiGetUserUrl = apiUrl + '/GetAllUser';
-      axios.get(apiGetUserUrl)
-      .then(response => {
-        this.dataUsers = response.data.data.map(item => (Object.assign({}, item, { fullname: item.fisrtName + ' ' + item.lastname })));
-        this.options = [...this.dataUsers.map(item => (Object.assign({}, {'id': item.id}, { 'value': item.fullname })))];
-        console.log(this.dataUsers);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
-    filterUsers: function() {
-      let apiGetUserUrl = apiUrl + '/GetAllUser';
-     
-      const filteredFields = {};
-      Object.entries(this.filters).forEach(([key, value]) => {
-        if (value != null) {
-          filteredFields[key] = value.trim();
-        }
-      });
-
-      if(Object.keys(filteredFields).length > 0) {
-        const queryString = Object.keys(filteredFields).map(key => `${key}=${filteredFields[key]}`).join('&');
-        apiGetUserUrl = `${apiGetUserUrl}?${queryString}`;
-        console.log(apiGetUserUrl);
-      }
-      
-      axios.get(apiGetUserUrl)
-      .then(response => {
-        this.dataUsers = response.data.data.map(item => (Object.assign({}, item, { fullname: item.fisrtName + ' ' + item.lastname })));
-      })
-      .catch(error => {
-        console.error(error);
-      });
-
-    },
+    ...mapActions(['getUsers','getOptionUsers','addUser','deleteUsers','updateUser']),
+    
     confirmDelete: function(id) {
       this.showConfirmDialog = true;
       this.deleteIds = [id];
@@ -464,19 +403,18 @@ export default {
       this.showConfirmDialog = true;
       this.deleteIds = this.selected.map(item => item.id);
     },
-    deleteItem: function() {
-      const apiDeleteUserUrl = `${apiUrl}/DeleteRange`;
-      axios.post(apiDeleteUserUrl,this.deleteIds)
-          .then(response => {
-            this.showSnackbar("Xóa thành công", "success")
+    deleteItem: async function() {
+      await this.deleteUsers(this.deleteIds);
 
-            console.log(response);
-            this.getAllUsers();
-          })
-          .catch(error => {
-            console.log(error);
-          })
-      this.showConfirmDialog = false;
+      if (this.deleteStatus) {
+          this.getUsers();
+          this.getOptionUsers();
+
+          this.showConfirmDialog = false;
+          this.showSnackbar("Xóa thành công", "success");
+      } else {
+          this.showSnackbar("Xóa thất bại", "error");
+      }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
@@ -494,65 +432,78 @@ export default {
       dataUser.paidLeave = 100;
       dataUser.unPaidLeave = 100;
       dataUser.userStatus = 1;
-      dataUser.typeUser = 1;
+      dataUser.typeUser = 5;
       dataUser.userWallImage = "https://img.rawpixel.com/private/static/images/website/2022-05/px1371058-image-kwvxzp98.jpg?w=800&dpr=1&fit=default&crop=default&q=65&vib=3&con=3&usm=15&bg=F4F4F3&ixlib=js-2.2.1&s=b6716f0c16f696115a0bb012f38d10d4";
     },
-    submitFormCreate: function() {
-      this.handleDataUser(this.dataUser);
+    resetUser: function() {
+      Object.entries(this.user).forEach(([key]) => {
+        this.user[key] = null;
+      });
+      delete this.user.id;
+    },
+    submitFormCreate: async function() {
+      this.handleDataUser(this.user);
       const now = new Date();
-      this.dataUser.createTime = now.toISOString();
-      console.log(this.dataUser);
-      const apiAddUserUrl = `${apiUrl}/AddUser`;
-      axios.post(apiAddUserUrl, this.dataUser)
-          .then(response => {
-            this.showSnackbar("Thêm người dùng thành công", "success")
-            this.dialogFormCreate = false;
-            this.getAllUsers();
-            // this.$ref.formDataCreate.$el.reset();
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Thêm người dùng thất bại", "error")
-            console.log("error: ",error);
-          })
+      this.user.createTime = now.toISOString();
+
+      await this.addUser(this.user);
+      console.log('sau: ',this.addStatus);
+      if(this.addStatus) {
+        this.showSnackbar("Thêm thành công", "success")
+        this.dialogFormCreate = false;
+        this.getUsers();
+        this.getOptionUsers();
+        this.resetUser();
+      }else {
+        this.showSnackbar("Thêm thất bại", "error");
+      }
     },
 
-    updateUser: function(user) {
-      let keyDataUser = Object.keys(this.dataUserUpdate);
+    updateDataUser: function(user) {
+      let keyDataUser = Object.keys(this.user);
       Object.entries(user).forEach(([key, value]) => {
         if (keyDataUser.includes(key)) {
-          this.dataUserUpdate[key] = value;
+          this.user[key] = value;
         }
         });
+      this.user.id = user.id;
       this.userImageUpdate = user.userAvatar != null ? user.userAvatar : this.userImageUpdate;
       this.dialogFormUpdate = true;
-      console.log(this.dataUserUpdate);
+      console.log(this.user);
     },
   
-    submitFormUpdate: function() {
-      this.handleDataUser(this.dataUserUpdate);
-      const apiAddUserUrl = `${apiUrl}/UpdateUserAsync/${this.dataUserUpdate.id}`;
-      axios.put(apiAddUserUrl, this.dataUserUpdate)
-          .then(response => {
-            this.showSnackbar("Cập nhật người dùng thành công", "success")
-            this.dialogFormUpdate = false;
-            this.getAllUsers();
-            // this.$ref.formDataUpdate.$el.reset();
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Cập nhật người dùng thất bại", "error")
-            console.log("error: ",error);
-          })
+    submitFormUpdate: async function() {
+      this.handleDataUser(this.user);
+      await this.updateUser(this.user);
+      
+      console.log('sau: ',this.updateStatus);
+      if(this.updateStatus) {
+        this.showSnackbar("Cập nhật thành công", "success")
+        this.dialogFormUpdate = false;
+        this.getUsers();
+        this.getOptionUsers();
+        this.resetUser();
+      }else {
+        this.showSnackbar("Cập nhật thất bại", "error");
+      }
+
     },
     submitForm: function() {
-      this.filterUsers();
+      this.getUsers(this.filters);
     },
     showSnackbar(msg, color) {
       this.snackbarMessage = msg;
       this.snackbarColor = color; 
       this.snackbar = true; 
     },
+    closeUpdateDialog: function() {
+      this.dialogFormUpdate = false;
+      this.resetUser();
+    },
+    closeAddDialog: function() {
+      this.dialogFormCreate = false;
+      this.resetUser()
+    }
     
   },
  

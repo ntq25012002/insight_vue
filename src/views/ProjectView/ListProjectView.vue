@@ -7,13 +7,13 @@
             <v-form @submit.prevent="submitForm">
               <v-row>
                 <v-col cols="3">
-                  <v-text-field background-color="white" small dense hide-details="true" v-model="filters.projectName"  outlined label="Tên project"></v-text-field>
+                  <v-text-field background-color="white" small dense hide-details="true" v-model="projectFilters.projectName"  outlined label="Tên project"></v-text-field>
                 </v-col>
                 <v-col cols="3">
                   <v-select
                     small dense hide-details="true"
-                    v-model="filters.poId"
-                    :items="options"
+                    v-model="projectFilters.poId"
+                    :items="optionUsers"
                     item-text="value"
                     item-value="id"
                     label="Chọn PO"
@@ -30,8 +30,8 @@
                     ></v-combobox> -->
                 </v-col>
                 <v-col cols="3">
-                  <v-select v-model="filters.pmId"
-                  :items="options"
+                  <v-select v-model="projectFilters.pmId"
+                  :items="optionUsers"
                   item-text="value"
                   item-value="id"
                   outlined
@@ -67,7 +67,7 @@
     <!-- Data table -->
     <v-data-table 
       :headers="headers" 
-      :items="dataProjects" item-key="id" 
+      :items="projects" item-key="id" 
       :items-per-page-options="[5, 10, 20, -1]"
       show-select 
       v-model="selected"
@@ -81,7 +81,7 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <td>
-            <v-icon @click="updateProject(item)"> mdi-pencil </v-icon>
+            <v-icon @click="updateDataProject(item)"> mdi-pencil </v-icon>
             <v-icon @click="confirmDelete(item.id)" > mdi-delete </v-icon>
           </td>
         </template>
@@ -147,25 +147,25 @@
               <v-container>
                 <v-row>
                   <v-col  cols="12" sm="6" md="6" >
-                    <v-text-field v-model="dataProject.projectName" label="Tên dự án" required> </v-text-field>
+                    <v-text-field v-model="project.projectName" label="Tên dự án" required> </v-text-field>
                   </v-col>
                   <v-col  cols="12" sm="6" md="6" >
-                    <v-text-field v-model="dataProject.estimateDay" label="Thời gian ước tính (ngày)" required> </v-text-field>
+                    <v-text-field v-model="project.estimateDay" label="Thời gian ước tính (ngày)" required> </v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-select :items="options"  
+                    <v-select :items="optionUsers"  
                       item-text="value"
                       item-value="id"
                       label="Người quản lý"
-                      v-model="dataProject.pmId" 
+                      v-model="project.pmId" 
                       required></v-select>
                   </v-col>
                   <v-col cols="12" sm="6">
-                    <v-select :items="options"  
+                    <v-select :items="optionUsers"  
                       item-text="value"
                       item-value="id"
                       label="Chủ dự án"
-                      v-model="dataProject.poId" 
+                      v-model="project.poId" 
                       required></v-select>
                   </v-col>
                 </v-row>
@@ -174,7 +174,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" variant="text" @click="dialogFormCreate = false">
+              <v-btn color="primary" variant="text" @click="closeAddDialog">
                 Đóng
               </v-btn>
               <v-btn color="success" type="submit" variant="text" >
@@ -197,30 +197,30 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12" md="6" sm="6">
-                      <v-text-field v-model="dataProjectUpdate.projectName" required label="Tên dự án"></v-text-field>
+                      <v-text-field v-model="project.projectName" required label="Tên dự án"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6" sm="6">
-                      <v-text-field v-model="dataProjectUpdate.estimateDay" required label="Thời gian ước tính(ngày)"></v-text-field>
+                      <v-text-field v-model="project.estimateDay" required label="Thời gian ước tính(ngày)"></v-text-field>
                     </v-col>
 
                      <v-col cols="12" md="6" sm="6">
                       <v-select
-                        :items="options"
+                        :items="optionUsers"
                         item-value="id"
                         item-text="value"
                         label="Người quản lý"
-                        v-model="dataProjectUpdate.pmId" 
+                        v-model="project.pmId" 
                         required
                       >
                       </v-select>
                     </v-col>
                     <v-col cols="12" md="6" sm="6">
                       <v-select
-                        :items="options"
+                        :items="optionUsers"
                         item-value="id"
                         item-text="value"
                         label="Chủ dự án"
-                        v-model="dataProjectUpdate.poId" 
+                        v-model="project.poId" 
                         required
                       >
                       </v-select>
@@ -231,7 +231,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" variant="text" @click="dialogFormUpdate = false">
+                <v-btn color="primary" variant="text" @click="closeUpdateDialog">
                   Đóng
                 </v-btn>
                 <v-btn color="success" type="submit" variant="text" >
@@ -258,24 +258,17 @@
 </template>
 
 <script>
-import axios from "axios";
-const apiUrl = 'https://localhost:44384/ii';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'ListUserView',
- 
+  computed: {
+    ...mapGetters(['projectFilters', 'project', 'projects', 'optionUsers', 'addStatus', 'updateStatus', 'deleteStatus']),
+  },
   data() {
     return {
-      filters: {
-        projectName: null,
-        pmId: null,
-        poId: null,
-      },
-      options: [],
       selected: [],
-      selectAll: false,
       showConfirmDialog: false,
-      deleteId: '',
       deleteIds: [],
       dialogFormUpdate: false,
       dialogFormCreate: false,
@@ -288,30 +281,6 @@ export default {
         { text: 'Ngày tạo', value: 'createTime', key: 'createTime' },
         { text: 'Thao tác', value: 'actions', key: 'actions', sortable: false },
       ],
-      dataProjects: [],
-      dataProject:  {
-        "projectName": null,
-        "poId": null,
-        "pmId": null,
-        "createTime": null,
-        "updateTime": null,
-        "dateTime": null,
-        "estimateDay": null,
-        "isLate": null,
-        "statusId": null,
-      },
-      dataProjectUpdate:  {
-        "id": null,
-        "projectName": null,
-        "poId": null,
-        "pmId": null,
-        "createTime": null,
-        "updateTime": null,
-        "dateTime": null,
-        "estimateDay": null,
-        "isLate": null,
-        "statusId": null,
-      },
       snackbar: false,
       snackbarMessage: "",
       snackbarColor: "",
@@ -319,23 +288,12 @@ export default {
     };
   },
   created() {
-    this.getAllUsers();
-    this.getAllProjects();
+    this.getOptionUsers();
+    this.getProjects();
   },  
   methods: {
-    getAllUsers: function() {
-      let apiGetUserUrl = apiUrl + '/GetAllUser';
-      axios.get(apiGetUserUrl)
-      .then(response => {
-        this.dataUsers = response.data.data.map(item => (Object.assign({}, item, { fullname: item.fisrtName + ' ' + item.lastname })));
-        this.options = [...this.dataUsers.map(item => (Object.assign({}, {'id': item.id}, { 'value': item.fullname })))];
-        console.log("option: ",this.options);
-        console.log(this.dataUsers);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
+    ...mapActions(['getProjects', 'getOptionUsers', 'addProject', 'updateProject', 'deleteProjects']),
+  
     formatDate: function(date) {
       let h = date.getHours();
       let i = date.getMinutes();
@@ -345,51 +303,7 @@ export default {
       let yyyy = date.getFullYear();
       return `${h}:${i}:${s} ${dd}-${mm}-${yyyy}`;
     },
-    filterProjects: function() {
-      let apiGetProjectUrl = apiUrl + '/GetAllProject';
-
-      const filteredFields = {};
-      Object.entries(this.filters).forEach(([key, value]) => {
-        if (value != null) {
-          filteredFields[key] = value;
-        }
-      });
-
-      if(Object.keys(filteredFields).length > 0) {
-        const queryString = Object.keys(filteredFields).map(key => `${key}=${filteredFields[key]}`).join('&');
-        apiGetProjectUrl = `${apiGetProjectUrl}?${queryString}`;
-        console.log(apiGetProjectUrl);
-      }
-      
-      axios.get(apiGetProjectUrl)
-      .then(response => {
-        this.dataProjects = response.data.data.map(item => (
-          Object.assign({}, 
-                        { createTime: this.formatDate(item.createTime) },  
-                        item)
-        ));
-      })
-      .catch(error => {
-        console.error(error);
-      });
-
-    },
-    getAllProjects: function() {
-      let apiGetProjectUrl = apiUrl + '/GetAllProject';
-      axios.get(apiGetProjectUrl)
-      .then(response => {
-        // this.dataProjects = response.data.data.map(item => (
-        //   Object.assign({}, 
-        //                 item,
-        //                 { createTime: this.formatDate(new Date(`${item.createTime}`)) }
-        //                 )
-        // ));
-        this.dataProjects = response.data.data;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    },
+    
     confirmDelete: function(id) {
       this.showConfirmDialog = true;
       this.deleteIds = [id];
@@ -398,19 +312,17 @@ export default {
       this.showConfirmDialog = true;
       this.deleteIds = this.selected.map(item => item.id);
     },
-    deleteItem: function() {
-      const apiDeleteProjectUrl = `${apiUrl}/DeleteRangeProject`;
-      axios.post(apiDeleteProjectUrl,this.deleteIds)
-          .then(response => {
-            this.showSnackbar("Xóa thành công", "success")
-            
-            console.log(response);
-            this.getAllProjects();
-          })
-          .catch(error => {
-            console.log(error);
-          })
-      this.showConfirmDialog = false;
+    deleteItem: async function() {
+      await this.deleteProjects(this.deleteIds);
+
+      if (this.deleteStatus) {
+        this.getProjects();
+        this.showConfirmDialog = false;
+        this.showSnackbar("Xóa thành công", "success");
+      } else {
+        this.showSnackbar("Xóa thất bại", "error");
+      }
+     
     },
    
     handleDataProject: function(dataProject) {
@@ -419,62 +331,72 @@ export default {
       dataProject.isLate = false;
       dataProject.statusId = 1;
    },
-    submitFormCreate: function() {
-      this.handleDataProject(this.dataProject);
+    submitFormCreate: async function() {
+      this.handleDataProject(this.project);
       const now = new Date();
-      this.dataProject.createTime = now.toISOString();
-      this.dataProject.dateTime = now.toISOString();
+      this.project.createTime = now.toISOString();
+      this.project.dateTime = now.toISOString();
 
-      const apiAddProjectUrl = `${apiUrl}/AddProject`;
-      axios.post(apiAddProjectUrl, this.dataProject)
-          .then(response => {
-            this.showSnackbar("Thêm dự án thành công", "success")
-            this.dialogFormCreate = false;
-            this.getAllProjects();
-
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Thêm dự án thất bại", "error")
-            console.log("error: ",error);
-          })
+      await this.addProject(this.project);
+      console.log('sau: ',this.addStatus);
+      if(this.addStatus) {
+        this.showSnackbar("Thêm thành công", "success")
+        this.dialogFormCreate = false;
+        this.getProjects();
+        this.resetProject();
+      }else {
+        this.showSnackbar("Thêm thất bại", "error");
+      }
     },
 
-    updateProject: function(project) {
-      let keyDataProject = Object.keys(this.dataProjectUpdate);
+    updateDataProject: function(project) {
+      let keyDataProject = Object.keys(this.project);
       Object.entries(project).forEach(([key, value]) => {
         if (keyDataProject.includes(key)) {
-          this.dataProjectUpdate[key] = value;
+          this.project[key] = value;
         }
         });
+      this.project.id = project.id;
       this.dialogFormUpdate = true;
-      console.log(this.dataProjectUpdate);
+      console.log(this.project);
     },
   
-    submitFormUpdate: function() {
-      this.handleDataProject(this.dataProjectUpdate);
-      console.log(this.dataProjectUpdate);
-      const apiAddProjectUrl = `${apiUrl}/updateProjectAsync/${this.dataProjectUpdate.id}`;
-      axios.put(apiAddProjectUrl, this.dataProjectUpdate)
-          .then(response => {
-            this.showSnackbar("Cập nhật dự án thành công", "success")
-            this.dialogFormUpdate = false;
-            this.getAllProjects();
-            console.log(response);
-          })
-          .catch(error => {
-            // this.showSnackbar("Cập nhật người dùng thất bại", "error")
-            console.log("error: ",error);
-          })
+    submitFormUpdate: async function() {
+      this.updateDataProject(this.project);
+      await this.updateProject(this.project);
+      console.log('sau: ',this.updateStatus);
+
+      if(this.updateStatus) {
+        this.showSnackbar("Cập nhật thành công", "success")
+        this.dialogFormUpdate = false;
+        this.getProjects();
+        this.resetProject();
+      }else {
+        this.showSnackbar("Cập nhật thất bại", "error");
+      }
     },
     submitForm: function() {
-      this.filterProjects();
+      this.getProjects(this.projectFilters);
+    },
+    resetProject: function() {
+      Object.entries(this.project).forEach(([key]) => {
+        this.project[key] = null;
+      });
+      delete this.project.id
     },
     showSnackbar(msg, color) {
       this.snackbarMessage = msg;
       this.snackbarColor = color; 
       this.snackbar = true; 
     },
+    closeUpdateDialog: function() {
+      this.dialogFormUpdate = false;
+      this.resetProject();
+    },
+    closeAddDialog: function() {
+      this.dialogFormCreate = false;
+      this.resetProject()
+    }
   },
 
 };

@@ -1,9 +1,13 @@
-import User from "./user";
+import user from "./user";
+import project from "./project";
+import attendance from "./attendance";
 
 const storeConfigs = {
 
     modules: {
-        User
+        user,
+        project,
+        attendance
     }
 }
 

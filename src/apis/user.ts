@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { UserType } from '@/types/user';
 interface Filters {
   [key: string]: string | null;
 }
@@ -7,7 +7,6 @@ interface Filters {
 const instance = axios.create({
   baseURL: 'https://localhost:44384/ii', 
 });
-
 
 export const getUsers = (filters = {}) => {
     if(Object.keys(filters).length > 0) {
@@ -21,10 +20,11 @@ export const getUsers = (filters = {}) => {
        
         return instance.get(`/GetUsers?${queryParams}`);
     }
+   
     return instance.get('/GetUsers')
 };
 
-export const addUser = (data: object) => instance.post(`/AddUser`,data);
+export const addUser = (data: UserType) => instance.post(`/AddUser`,data);
 export const getUserById = (userId: number) => instance.get(`/GetUserById/${userId}`);
-export const updateUser = (userId:number, data:object) => instance.put(`/UpdateUser/${userId}`, data);
+export const updateUser = (userId:number, data:UserType) => instance.put(`/UpdateUser/${userId}`, data);
 export const deleteUsers = (userIds: number[]) => instance.post(`/DeleteRange`, userIds);

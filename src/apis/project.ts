@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ProjectType } from '@/types/project';
 
 interface Filters {
   [key: string]: string | null;
@@ -23,7 +24,7 @@ export const getProjects = (filters = {}) => {
     return instance.get('/GetProjects')
 };
 
-export const addProject = (data: object) => instance.post(`/AddProject`,data);
+export const addProject = (data: ProjectType) => instance.post(`/AddProject`,data);
 export const getProjectById = (projectId: number) => instance.get(`/GetProjectById/${projectId}`);
-export const updateProject = (projectId:number, data:object) => instance.put(`/UpdateProject/${projectId}`, data);
+export const updateProject = (projectId:number, data:ProjectType) => instance.put(`/UpdateProject/${projectId}`, data);
 export const deleteProjects = (projectIds: number[]) => instance.post(`/DeleteRangeProject`, projectIds);
