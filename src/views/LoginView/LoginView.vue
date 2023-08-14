@@ -1,12 +1,12 @@
 <template>
     <div>
-
+        Login Page
     </div>
 </template>
 <script>
 export default {
   created() {
-    
+
   },
   data() {
     return {

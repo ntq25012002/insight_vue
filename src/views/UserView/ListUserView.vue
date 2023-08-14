@@ -327,9 +327,7 @@
 </template>
 
 <script>
-// import axios from "axios";
 import { mapActions, mapGetters } from 'vuex';
-// const apiUrl = 'https://localhost:44384/ii';
 
 export default {
   name: 'ListUserView',
