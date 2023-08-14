@@ -6,16 +6,16 @@
           <v-col cols="12" md="12">
             <v-form @submit.prevent="submitForm">
               <v-row>
-                <v-col cols="4">
+                <v-col cols="12" md="4">
                   <v-text-field background-color="white" small dense hide-details="true" v-model="filters.name"  outlined label="Họ tên"></v-text-field>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="12" md="4">
                   <v-text-field background-color="white" small dense hide-details="true" v-model="filters.email" outlined label="Email"></v-text-field>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="12" md="4">
                   <v-text-field background-color="white" small dense hide-details="true" v-model="filters.phone" outlined label="Số điện thoại"></v-text-field>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="6" md="4">
                   <v-select
                     small dense hide-details="true"
                     v-model="filters.hrId"
@@ -35,7 +35,7 @@
                       item-value="id"
                     ></v-combobox> -->
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="6" md="4">
                   <v-select v-model="filters.introduceUserId"
                   :items="optionUsers"
                   item-text="value"
@@ -53,7 +53,7 @@
                       item-value="id"
                     ></v-combobox> -->
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="12" md="4">
                   <v-btn class="w-100 btn-custom--w-100 text-white" dark type="submit" color="#ff5126">Lọc</v-btn>
                 </v-col>
               </v-row>
@@ -80,8 +80,8 @@
 
         <template v-slot:[`item.userAvatar`]="{ item }">
           <td>
-            <v-avatar size="36" class="mr-2">
-              <img :src="item.userAvatar" alt="User Avatar" />
+            <v-avatar size="45" class="mr-2">
+              <img :src="item.userAvatar" alt="User Avatar"  />
             </v-avatar>
           </td>
         </template>
@@ -141,6 +141,7 @@
         </v-card>
       </v-dialog>
     </v-app>
+
     <!-- Dialog Add -->
     <template>
       <v-row justify="center">
@@ -159,8 +160,7 @@
                       <img :src="selectedImage" alt="User Avatar" />
                     </v-avatar>
                     </label>
-                    <input id="avatar_file" hidden type="file" @change="handleImageUpload" />
-                   
+                    <input id="avatar_file" hidden ref="image" type="file" @change="handleImageUpload" />
                   </v-col>
 
                   <v-col  cols="12" sm="6" md="4" >
@@ -242,7 +242,7 @@
                   <v-col class="text-center" cols="12" >
                     <label for="avatar_file_update">
                       <v-avatar size="80" class="mr-2">
-                      <img :src="userImageUpdate" alt="User Avatar" />
+                      <img :src="selectedImage" alt="User Avatar" />
                     </v-avatar>
                     </label>
                     <input id="avatar_file_update" hidden type="file" @change="handleImageUpload" />
@@ -338,9 +338,7 @@ export default {
   },
   data() {
     return {
-      userImageUpdate: "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
       selectedImage: "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
-     
       selected: [],
       selectAll: false,
       showConfirmDialog: false,
@@ -352,7 +350,6 @@ export default {
       headers: [
         { text: 'Avatar', value: 'userAvatar', key: 'userAvatar' },
         { text: 'Họ tên', value: 'fullname', key: 'fullname' },
-        { text: 'Nick name', value: 'nickName', key: 'nickName' },
         { text: 'Số điện thoại', value: 'phoneNumber', key: 'phoneNumber' },
         { text: 'Email', value: 'email', key: 'email' },
         { text: 'Địa chỉ', value: 'address', key: 'address' },
@@ -381,11 +378,12 @@ export default {
       "updateTime": null,
       "id": null
       },
-      
+      fileImage: null,
       snackbar: false,
       snackbarMessage: "",
       snackbarColor: "",
       snackbarTimeout: 5000,
+      
     };
   },
   created() {
@@ -420,7 +418,10 @@ export default {
       const file = event.target.files[0];
       if (file) {
         this.selectedImage = URL.createObjectURL(file);
+        // this.fileImage = this.$refs.image.files[0]
+        this.fileImage = file;
       }
+      console.log(this.fileImage);
     },
     handleDataUser: function(dataUser) {
       const now = new Date();
@@ -443,17 +444,25 @@ export default {
     },
     submitFormCreate: async function() {
       this.handleDataUser(this.user);
+      const formData = new FormData();
       const now = new Date();
       this.user.createTime = now.toISOString();
 
-      await this.addUser(this.user);
-      console.log('sau: ',this.addStatus);
+      formData.append('user', JSON.stringify(this.user))
+      if(this.fileImage) {
+        formData.append('fileImage', this.fileImage)
+      }
+
+      await this.addUser(formData);
+
       if(this.addStatus) {
         this.showSnackbar("Thêm thành công", "success")
         this.dialogFormCreate = false;
         this.getUsers();
         this.getOptionUsers();
         this.resetUser();
+        this.fileImage = null;
+        this.selectedImage = "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
       }else {
         this.showSnackbar("Thêm thất bại", "error");
       }
@@ -465,24 +474,34 @@ export default {
         if (keyDataUser.includes(key)) {
           this.user[key] = value;
         }
-        });
+      });
       this.user.id = user.id;
-      this.userImageUpdate = user.userAvatar != null ? user.userAvatar : this.userImageUpdate;
+      this.selectedImage = user.userAvatar != null ? user.userAvatar : this.selectedImage;
       this.dialogFormUpdate = true;
-      console.log(this.user);
     },
   
     submitFormUpdate: async function() {
-      this.handleDataUser(this.user);
-      await this.updateUser(this.user);
-      
-      console.log('sau: ',this.updateStatus);
+      const dataUser = new FormData();
+      const now = new Date();
+      this.user.updateTime = now.toISOString();
+
+      dataUser.append('user', JSON.stringify(this.user))
+
+      if(this.fileImage) {
+        dataUser.append('fileImage', this.fileImage)
+      }
+      const id = this.user.id;
+
+      await this.updateUser({dataUser, id});
+
       if(this.updateStatus) {
         this.showSnackbar("Cập nhật thành công", "success")
         this.dialogFormUpdate = false;
         this.getUsers();
         this.getOptionUsers();
         this.resetUser();
+        this.selectedImage = "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
+        this.fileImage = null;
       }else {
         this.showSnackbar("Cập nhật thất bại", "error");
       }
@@ -499,12 +518,15 @@ export default {
     closeUpdateDialog: function() {
       this.dialogFormUpdate = false;
       this.resetUser();
+      this.selectedImage = "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
+      this.fileImage = null;
     },
     closeAddDialog: function() {
       this.dialogFormCreate = false;
-      this.resetUser()
+      this.resetUser();
+      this.selectedImage = "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg"
+      this.fileImage = null;
     }
-    
   },
  
 

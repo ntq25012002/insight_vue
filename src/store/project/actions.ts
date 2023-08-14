@@ -7,8 +7,7 @@ import { ProjectType } from '@/types/project';
 export const getProjects = ({commit}: { commit: Commit }, filters: {} ) => {
     projectApi.getProjects(filters).then((res:any) => {
         const dataProjects: ProjectType[] = res.data.data;
-        console.log('res: ', res);
-        
+        // console.log('res: ', res);
         commit('GET_PROJECTS', dataProjects);
     })
     .catch(err => {

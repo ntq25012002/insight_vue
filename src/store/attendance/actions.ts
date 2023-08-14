@@ -5,8 +5,7 @@ import { AttendanceType, TypeAttendanceEnum, AttendanceStatusEnum } from '@/type
 export const getAttendances = ({commit}: { commit: Commit }, filters: {} ) => {
     attendanceApi.getAttendances(filters).then((res:any) => {
         const dataAttendances: AttendanceType[] = res.data.data;
-        console.log('res: ', res);
-        
+        // console.log('res: ', res);
         commit('GET_ATTENDANCES', dataAttendances);
     })
     .catch(err => {

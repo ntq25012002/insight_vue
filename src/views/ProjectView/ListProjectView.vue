@@ -6,10 +6,10 @@
           <v-col cols="12" md="12">
             <v-form @submit.prevent="submitForm">
               <v-row>
-                <v-col cols="3">
+                <v-col cols="12" md="3">
                   <v-text-field background-color="white" small dense hide-details="true" v-model="projectFilters.projectName"  outlined label="Tên project"></v-text-field>
                 </v-col>
-                <v-col cols="3">
+                <v-col cols="12" md="3">
                   <v-select
                     small dense hide-details="true"
                     v-model="projectFilters.poId"
@@ -29,7 +29,7 @@
                       item-value="id"
                     ></v-combobox> -->
                 </v-col>
-                <v-col cols="3">
+                <v-col cols="12" md="3">
                   <v-select v-model="projectFilters.pmId"
                   :items="optionUsers"
                   item-text="value"
@@ -48,7 +48,7 @@
                     ></v-combobox> -->
                 </v-col>
                 
-                <v-col cols="3">
+                <v-col cols="12" md="3">
                   <v-btn class="w-100 btn-custom--w-100 text-white" dark type="submit" color="#ff5126">Lọc</v-btn>
                 </v-col>
               </v-row>

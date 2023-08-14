@@ -50,7 +50,7 @@ export default {
   z-index: 1; /* Đảm bảo SidebarComponent hiển thị trước HeaderComponent */
 }
 .nav-position-top {
-  top: 64px !important;
+  padding-top: 64px !important;
 }
 .v-list-item__icon {
   max-width: 24px;

@@ -7,7 +7,7 @@
             <v-form @submit.prevent="submitForm">
               <v-row>
             
-                <v-col cols="4">
+                <v-col cols="12" sm="6" md="4">
                   <v-select
                     small dense hide-details="true"
                     v-model="attendanceFilters.userId"
@@ -20,7 +20,7 @@
                     ></v-select>
   
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="12" sm="6" md="4">
                   <v-select
                     small dense hide-details="true"
                     v-model="attendanceFilters.workShiftId"
@@ -33,7 +33,7 @@
                     ></v-select>
                 </v-col>
                
-                <v-col cols="4">
+                <v-col cols="12" sm="12" md="4">
                   <v-btn class="w-100 btn-custom--w-100 text-white" dark type="submit" color="#ff5126">Lọc</v-btn>
                 </v-col>
               </v-row>
@@ -144,14 +144,25 @@
                   <!-- <v-col cols="12" sm="6">
                     <template>
                       <div>
-                        <v-menu offset-y>
-                          <template v-slot:activator="{ on }">
-                            <v-icon v-on="on">mdi-calendar</v-icon>
-                          </template>
-                          <v-date-picker v-model="selectedDate" />
+                        <v-text-field
+                          v-model="selectedDateTime"
+                          :value="selectedDateTime"
+                          label="Date and Time"
+                          readonly
+                          append-icon="event"
+                          @click:append="showPicker = !showPicker"
+                        ></v-text-field>
+                        <v-menu v-model="showPicker" :close-on-content-click="false" offset-y>
+                          <v-date-picker
+                            v-model="selectedDate"
+                            no-title
+                            scrollable
+                          ></v-date-picker>
+                          <v-time-picker v-model="selectedTime"></v-time-picker>
                         </v-menu>
                       </div>
                     </template>
+                   
                   </v-col> -->
 
                 </v-row>
@@ -236,6 +247,16 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   name: 'ListUserView',
   computed: {
+    // selectedDateTime: {
+    //   get() {
+    //     return `${this.selectedDate}T${this.selectedTime}`;
+    //   },
+    //   set(value) {
+    //     const [date, time] = value.split('T');
+    //     this.selectedDate = date;
+    //     this.selectedTime = time;
+    //   },
+    // },
     ...mapGetters(['attendanceFilters', 'attendance', 'attendances', 'optionUsers', 'addStatus', 'updateStatus', 'deleteStatus'] )
   },
   data() {
@@ -248,7 +269,7 @@ export default {
       selected: [],
       selectAll: false,
       showConfirmDialog: false,
-      selectedDate: null,
+      // selectedDate: null,
       deleteIds: [],
       dialogFormUpdate: false,
       dialogFormCreate: false,
@@ -262,6 +283,9 @@ export default {
         { text: 'Attendance Status', value: 'attendanceStatus', key: 'attendanceStatus' },
         { text: 'Actions', value: 'actions', key: 'actions', sortable: false },
       ],
+      // selectedDate: new Date().toISOString().substr(0, 10),
+      // selectedTime: '00:00',
+      // showPicker: false,
       snackbar: false,
       snackbarMessage: "",
       snackbarColor: "",
@@ -287,12 +311,12 @@ export default {
       await this.deleteAttendances(this.deleteIds);
 
       if (this.deleteStatus) {
-          this.getAttendances();
+        this.getAttendances();
 
-          this.showConfirmDialog = false;
-          this.showSnackbar("Xóa thành công", "success");
+        this.showConfirmDialog = false;
+        this.showSnackbar("Xóa thành công", "success");
       } else {
-          this.showSnackbar("Xóa thất bại", "error");
+        this.showSnackbar("Xóa thất bại", "error");
       }
      
     },

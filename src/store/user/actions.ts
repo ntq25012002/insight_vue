@@ -2,6 +2,11 @@ import * as userApi from "@/apis/user";
 import { Commit } from 'vuex';
 import { UserType, UserStatusEnum, TypeUserEnum } from '@/types/user';
 
+interface payload {
+    dataUser: UserType;
+    id: number;
+}
+
 export const getUsers = ({commit}: { commit: Commit }, filters: {} ) => {
     userApi.getUsers(filters).then((res:any) => {
         const dataUsers: UserType[] = res.data.data.map((item: UserType) => (Object.assign({}, item, { fullname: item.fisrtName + ' ' + item.lastname })));
@@ -25,23 +30,24 @@ export const getOptionUsers = ({commit}: { commit: Commit }, userId = 0 ) => {
 }
 
 export const addUser = async ({commit}: { commit: Commit }, user: UserType) => {
-    if (
-        (user.userStatus !== UserStatusEnum.ACTIVE &&
-        user.userStatus !== UserStatusEnum.LOCK &&
-        user.userStatus !== UserStatusEnum.WAITCONFIRM) 
-        ||
-        (user.typeUser !== TypeUserEnum.OFFICIAL &&
-        user.typeUser !== TypeUserEnum.PARTTIME &&
-        user.typeUser !== TypeUserEnum.CONTRACT &&
-        user.typeUser !== TypeUserEnum.SUPPORT && 
-        user.typeUser !== TypeUserEnum.CUSTOMER &&
-        user.typeUser !== TypeUserEnum.PROBATIONARY)
-    ) {
-        commit('SET_ADD_STATUS', false);
+    
+    // if (
+    //     (user.userStatus !== UserStatusEnum.ACTIVE &&
+    //     user.userStatus !== UserStatusEnum.LOCK &&
+    //     user.userStatus !== UserStatusEnum.WAITCONFIRM) 
+    //     ||
+    //     (user.typeUser !== TypeUserEnum.OFFICIAL &&
+    //     user.typeUser !== TypeUserEnum.PARTTIME &&
+    //     user.typeUser !== TypeUserEnum.CONTRACT &&
+    //     user.typeUser !== TypeUserEnum.SUPPORT && 
+    //     user.typeUser !== TypeUserEnum.CUSTOMER &&
+    //     user.typeUser !== TypeUserEnum.PROBATIONARY)
+    // ) {
+    //     commit('SET_ADD_STATUS', false);
 
-        console.log("Invalid userStatus value or typeUser value");
-        return;
-    }
+    //     console.log("Invalid userStatus value or typeUser value");
+    //     return;
+    // }
 
     try {
         const res = await userApi.addUser(user);
@@ -63,27 +69,30 @@ export const addUser = async ({commit}: { commit: Commit }, user: UserType) => {
 }
 
 
-export const updateUser = async ({commit} : {commit: Commit},user: UserType) => {
-    if (
-        (user.userStatus !== UserStatusEnum.ACTIVE &&
-        user.userStatus !== UserStatusEnum.LOCK &&
-        user.userStatus !== UserStatusEnum.WAITCONFIRM) 
-        ||
-        (user.typeUser !== TypeUserEnum.OFFICIAL &&
-        user.typeUser !== TypeUserEnum.PARTTIME &&
-        user.typeUser !== TypeUserEnum.CONTRACT &&
-        user.typeUser !== TypeUserEnum.SUPPORT && 
-        user.typeUser !== TypeUserEnum.CUSTOMER &&
-        user.typeUser !== TypeUserEnum.PROBATIONARY)
-    ) {
-        commit('SET_UPDATE_STATUS', false);
+export const updateUser = async ({commit} : {commit: Commit}, payload: payload) => {
+    // if (
+    //     (user.userStatus !== UserStatusEnum.ACTIVE &&
+    //     user.userStatus !== UserStatusEnum.LOCK &&
+    //     user.userStatus !== UserStatusEnum.WAITCONFIRM) 
+    //     ||
+    //     (user.typeUser !== TypeUserEnum.OFFICIAL &&
+    //     user.typeUser !== TypeUserEnum.PARTTIME &&
+    //     user.typeUser !== TypeUserEnum.CONTRACT &&
+    //     user.typeUser !== TypeUserEnum.SUPPORT && 
+    //     user.typeUser !== TypeUserEnum.CUSTOMER &&
+    //     user.typeUser !== TypeUserEnum.PROBATIONARY)
+    // ) {
+    //     commit('SET_UPDATE_STATUS', false);
 
-        console.log("Invalid userStatus value or typeUser value");
-        return;
-    }
+    //     console.log("Invalid userStatus value or typeUser value");
+    //     return;
+    // }
 
+    const {dataUser , id} = payload;
+    console.log(dataUser, id);
+    
     try {
-        const res = await userApi.updateUser(user.id,user);
+        const res = await userApi.updateUser(id,dataUser);
         commit('SET_UPDATE_STATUS', true);
         console.log("res: ", res);
     } catch (err) {
